@@ -19,7 +19,8 @@ export default function LandingPage() {
         
         <Link
           href="/game"
-          className="inline-block px-12 py-4 text-2xl font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg shadow-xl transition-all hover:scale-105 active:scale-95"
+          className="inline-block px-16 py-6 text-4xl font-bold text-white bg-green-500 hover:bg-green-600 rounded-xl shadow-2xl transition-all hover:scale-110 active:scale-95 animate-pulse"
+          style={{ animationDuration: '2s' }}
         >
           🌱 Play Now
         </Link>

@@ -12,6 +12,7 @@ export class GardenScene extends Phaser.Scene {
   private plots: Phaser.GameObjects.Image[] = [];
   private plotStates: PlotState[] = [];
   private selectedPlot: number | null = null;
+  private timerTexts: Phaser.GameObjects.Text[] = [];
   
   private plantBtn!: Phaser.GameObjects.Text;
   private waterBtn!: Phaser.GameObjects.Text;
@@ -58,7 +59,16 @@ export class GardenScene extends Phaser.Scene {
           this.selectPlot(plotIndex);
         });
         
+        // Timer text (hidden by default)
+        const timerText = this.add.text(x, y - 60, '', {
+          fontSize: '12px',
+          color: '#ffffff',
+          backgroundColor: '#000000',
+          padding: { x: 4, y: 2 }
+        }).setOrigin(0.5).setVisible(false);
+        
         this.plots.push(plot);
+        this.timerTexts.push(timerText);
         this.plotStates.push({ status: 'empty' });
       }
     }
@@ -179,9 +189,36 @@ export class GardenScene extends Phaser.Scene {
         const BLOOM_TIME = 60 * 1000; // 60 seconds for testing
         // const BLOOM_TIME = 24 * 60 * 60 * 1000; // 24 hours for production
         
-        if (elapsed >= BLOOM_TIME) {
+        const remaining = BLOOM_TIME - elapsed;
+        
+        if (remaining > 0) {
+          // Update timer display
+          const hours = Math.floor(remaining / (60 * 60 * 1000));
+          const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+          const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+          
+          let timeStr = '';
+          if (hours > 0) {
+            timeStr = `${hours}h ${minutes}m`;
+          } else if (minutes > 0) {
+            timeStr = `${minutes}m ${seconds}s`;
+          } else {
+            timeStr = `${seconds}s`;
+          }
+          
+          const timerText = this.timerTexts[index];
+          if (timerText) {
+            timerText.setText(`Blooms in: ${timeStr}`);
+            timerText.setVisible(true);
+          }
+        } else {
+          const timerText = this.timerTexts[index];
+          if (timerText) timerText.setVisible(false);
           this.revealBloom(index);
         }
+      } else {
+        const timerText = this.timerTexts[index];
+        if (timerText) timerText.setVisible(false);
       }
     });
   }
@@ -242,8 +279,39 @@ export class GardenScene extends Phaser.Scene {
         // Particle burst
         this.addBloomParticles(plot.x, plot.y, rarity);
         
-        // Show rarity message
+        // Show rarity message with color
         const rarityNames = ['', 'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic'];
+        const rarityColors = ['', '#90EE90', '#4169E1', '#9370DB', '#FFD700', '#FF1493', '#FF00FF'];
+        
+        const rarityName = rarityNames[rarity] || 'Unknown';
+        const rarityColor = rarityColors[rarity] || '#FFFFFF';
+        
+        // Rarity label on plot
+        const label = this.add.text(plot.x, plot.y + 60, rarityName, {
+          fontSize: '14px',
+          color: rarityColor,
+          fontStyle: 'bold',
+          stroke: '#000000',
+          strokeThickness: 3
+        }).setOrigin(0.5).setScale(0);
+        
+        // Label flash animation
+        this.tweens.add({
+          targets: label,
+          scale: 1.3,
+          duration: 300,
+          ease: 'Back.easeOut',
+          yoyo: true,
+          repeat: 2,
+          onComplete: () => {
+            this.tweens.add({
+              targets: label,
+              scale: 1,
+              duration: 200
+            });
+          }
+        });
+        
         this.showMessage(`🌷 ${rarityNames[rarity]} Tulip bloomed!`, 3000);
       },
     });
