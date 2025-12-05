@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "tulip-game/apps/web/package.json",
+      "use": "@vercel/next",
+      "config": {
+        "buildCommand": "cd ../../.. && pnpm install && cd tulip-game && pnpm turbo build --filter=web"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "tulip-game/apps/web/$1"
+    }
+  ]
+}
