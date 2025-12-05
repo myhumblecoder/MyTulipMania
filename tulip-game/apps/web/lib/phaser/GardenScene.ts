@@ -185,9 +185,9 @@ export class GardenScene extends Phaser.Scene {
     this.plotStates.forEach((state, index) => {
       if (state.status === 'watered' && state.wateredAt) {
         const elapsed = now - state.wateredAt;
-        // For testing: 60 seconds. For production: 24 * 60 * 60 * 1000
-        const BLOOM_TIME = 60 * 1000; // 60 seconds for testing
-        // const BLOOM_TIME = 24 * 60 * 60 * 1000; // 24 hours for production
+        // Production: 24 hours
+        const BLOOM_TIME = 24 * 60 * 60 * 1000; // 24 hours for production
+        // const BLOOM_TIME = 60 * 1000; // 60 seconds for testing
         
         const remaining = BLOOM_TIME - elapsed;
         
