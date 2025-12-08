@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import { BootScene } from '@/lib/phaser/BootScene';
+import { TitleScene } from '@/lib/phaser/TitleScene';
 import { GardenScene } from '@/lib/phaser/GardenScene';
 
 export default function GameCanvas() {
@@ -21,7 +22,7 @@ export default function GameCanvas() {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
       },
-      scene: [BootScene, GardenScene],
+      scene: [BootScene, TitleScene, GardenScene],
     };
 
     gameRef.current = new Phaser.Game(config);
@@ -38,8 +39,8 @@ export default function GameCanvas() {
   return (
     <div 
       id="game-container" 
-      className="w-full h-full"
-      style={{ width: '800px', height: '600px', maxWidth: '100%' }}
+      className="fixed inset-0 w-full h-full"
+      style={{ margin: 0, padding: 0, backgroundColor: '#1a1a1a' }}
     />
   );
 }

@@ -32,58 +32,52 @@ export class BootScene extends Phaser.Scene {
       loadingText.destroy();
     });
 
-    // For MVP, we'll use colored rectangles instead of assets
-    // This creates simple placeholder "sprites" programmatically
-    this.createPlaceholderAssets();
+    // Load greenhouse backgrounds
+    this.load.image('greenhouse_interior', '/assets/greenhouse/interior.png');
+    this.load.image('shelf_empty', '/assets/greenhouse/empty_shelf.png');
+    
+    // Load pot states
+    this.load.image('pot_empty', '/assets/pot/pot_stage_1.png');
+    this.load.image('pot_planted', '/assets/pot/post_stage_2.png');
+    this.load.image('pot_watered', '/assets/pot/pot_stage_3.png');
+    
+    // Load tools
+    this.load.image('tool_seeds', '/assets/tools/seeds.png');
+    this.load.image('tool_watering_can', '/assets/tools/watering_can.png');
+    this.load.image('tool_fertilizer', '/assets/tools/fertilizer.png');
+    
+    // Load tulip images
+    this.load.image('tulip_common', '/assets/tulips/common.png');
+    this.load.image('tulip_uncommon', '/assets/tulips/uncommon.png');
+    this.load.image('tulip_rare', '/assets/tulips/rare.png');
+    this.load.image('tulip_epic', '/assets/tulips/epic.png');
+    this.load.image('tulip_legendary', '/assets/tulips/legendary.png');
+    this.load.image('tulip_mythic', '/assets/tulips/mythic.png');
+    
+    // Create particle texture for starbursts
+    this.createParticleTexture();
   }
 
-  createPlaceholderAssets() {
-    // Create colored rectangles as placeholders
+  createParticleTexture() {
+    // Create a star shape for particle effects
     const graphics = this.add.graphics();
+    graphics.fillStyle(0xFFFFFF, 1);
     
-    // Plot states
-    graphics.fillStyle(0x8B4513, 1); // Brown for empty plot
-    graphics.fillRect(0, 0, 100, 100);
-    graphics.generateTexture('plot_empty', 100, 100);
-    graphics.clear();
-
-    graphics.fillStyle(0x654321, 1); // Darker brown for planted
-    graphics.fillRect(0, 0, 100, 100);
-    graphics.generateTexture('plot_planted', 100, 100);
-    graphics.clear();
-
-    graphics.fillStyle(0x4169E1, 1); // Blue for watered
-    graphics.fillRect(0, 0, 100, 100);
-    graphics.generateTexture('plot_watered', 100, 100);
-    graphics.clear();
-
-    // Rarity tulips (different colors)
-    const rarityColors = [
-      0xFFFFFF, // 0 (unused)
-      0x90EE90, // 1 Common (light green)
-      0x4169E1, // 2 Uncommon (royal blue)
-      0x9370DB, // 3 Rare (medium purple)
-      0xFFD700, // 4 Epic (gold)
-      0xFF1493, // 5 Legendary (deep pink)
-      0xFF00FF  // 6 Mythic (magenta)
-    ];
-
-    rarityColors.forEach((color, index) => {
-      if (index === 0) return;
-      graphics.fillStyle(color, 1);
-      graphics.fillRect(0, 0, 100, 100);
-      // Add a simple tulip shape (triangle on circle)
-      graphics.fillStyle(0xFFFFFF, 0.3);
-      graphics.fillCircle(50, 70, 20);
-      graphics.fillTriangle(50, 30, 35, 60, 65, 60);
-      graphics.generateTexture(`tulip_rarity_${index}`, 100, 100);
-      graphics.clear();
-    });
-
+    // Draw a star
+    const points = [];
+    for (let i = 0; i < 10; i++) {
+      const angle = (i * Math.PI) / 5;
+      const radius = i % 2 === 0 ? 8 : 4;
+      points.push(8 + radius * Math.cos(angle));
+      points.push(8 + radius * Math.sin(angle));
+    }
+    
+    graphics.fillPoints(points as any, true);
+    graphics.generateTexture('particle_star', 16, 16);
     graphics.destroy();
   }
 
   create() {
-    this.scene.start('GardenScene');
+    this.scene.start('TitleScene');
   }
 }
