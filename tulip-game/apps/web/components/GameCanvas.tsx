@@ -21,7 +21,6 @@ export default function GameCanvas() {
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        orientation: Phaser.Scale.Orientation.LANDSCAPE,
       },
       scene: [BootScene, TitleScene, GardenScene],
     };
