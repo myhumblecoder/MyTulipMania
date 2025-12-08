@@ -245,9 +245,17 @@ export class GardenScene extends Phaser.Scene {
     state.bloomedAt = Date.now();
     state.rarity = rarity;
     
-    // Juicy reveal animation
+    // Map rarity to sprite name
+    const sprites = [
+      'tulip_common',
+      'tulip_uncommon',
+      'tulip_rare',
+      'tulip_epic',
+      'tulip_legendary',
+      'tulip_mythic'
+    ];
     
-    // Flash effect
+    // Flash effect on plot background
     this.tweens.add({
       targets: plot,
       alpha: 0,
@@ -255,29 +263,53 @@ export class GardenScene extends Phaser.Scene {
       repeat: 3,
       duration: 150,
       onComplete: () => {
-        plot.setTexture(`tulip_rarity_${rarity}`);
         plot.setAlpha(1);
         
-        // Scale-in animation
-        plot.setScale(0);
+        // Create the tulip image on top of plot
+        const spriteName = sprites[rarity - 1] || 'tulip_common';
+        const tulip = this.add.image(plot.x, plot.y, spriteName)
+          .setScale(0)
+          .setDepth(10);
+        
+        // Epic bloom animation
         this.tweens.add({
-          targets: plot,
-          scaleX: 1.3,
-          scaleY: 1.3,
-          duration: 500,
+          targets: tulip,
+          scale: 1.3,
+          duration: 600,
           ease: 'Back.easeOut',
-          onComplete: () => {
-            this.tweens.add({
-              targets: plot,
-              scaleX: 1,
-              scaleY: 1,
-              duration: 200,
-            });
-          },
+          yoyo: true,
+          onComplete: () => tulip.setScale(1)
         });
         
-        // Particle burst
-        this.addBloomParticles(plot.x, plot.y, rarity);
+        // Rarity-colored starburst
+        const colors = [
+          0x90EE90, // Common - light green
+          0x4169E1, // Uncommon - royal blue  
+          0x9370DB, // Rare - purple
+          0xFFD700, // Epic - gold
+          0xFF1493, // Legendary - hot pink
+          0xFF00FF  // Mythic - magenta
+        ];
+        
+        const particleCount = rarity === 6 ? 80 : rarity === 5 ? 60 : 40;
+        
+        const emitter = this.add.particles(0, 0, 'particle_star', {
+          x: plot.x,
+          y: plot.y,
+          speed: { min: 100, max: 300 },
+          angle: { min: 0, max: 360 },
+          scale: { start: 0.5, end: 0 },
+          blendMode: 'ADD',
+          lifespan: 800,
+          quantity: particleCount,
+          tint: colors[rarity - 1]
+        });
+        emitter.explode();
+        
+        // Clean up emitter after animation
+        this.time.delayedCall(1000, () => {
+          emitter.destroy();
+        });
         
         // Show rarity message with color
         const rarityNames = ['', 'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic'];
@@ -329,29 +361,6 @@ export class GardenScene extends Phaser.Scene {
         y: y + Phaser.Math.Between(-30, 30),
         alpha: 0,
         duration: 600,
-        ease: 'Cubic.easeOut',
-        onComplete: () => particle.destroy(),
-      });
-    }
-  }
-
-  private addBloomParticles(x: number, y: number, rarity: number) {
-    // Rarity-specific colors
-    const colors = [0xffffff, 0x90EE90, 0x4169E1, 0x9370DB, 0xFFD700, 0xFF1493, 0xFF00FF];
-    const color = colors[rarity];
-    
-    // Star burst
-    for (let i = 0; i < 20; i++) {
-      const particle = this.add.circle(x, y, 5, color);
-      const angle = (Math.PI * 2 * i) / 20;
-      const distance = 60;
-      
-      this.tweens.add({
-        targets: particle,
-        x: x + Math.cos(angle) * distance,
-        y: y + Math.sin(angle) * distance,
-        alpha: 0,
-        duration: 800,
         ease: 'Cubic.easeOut',
         onComplete: () => particle.destroy(),
       });

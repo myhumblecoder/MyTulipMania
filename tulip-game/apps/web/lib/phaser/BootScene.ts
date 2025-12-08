@@ -32,13 +32,24 @@ export class BootScene extends Phaser.Scene {
       loadingText.destroy();
     });
 
-    // For MVP, we'll use colored rectangles instead of assets
+    // Load tulip images
+    this.load.image('tulip_common', '/assets/tulips/common.png');
+    this.load.image('tulip_uncommon', '/assets/tulips/uncommon.png');
+    this.load.image('tulip_rare', '/assets/tulips/rare.png');
+    this.load.image('tulip_epic', '/assets/tulips/epic.png');
+    this.load.image('tulip_legendary', '/assets/tulips/legendary.png');
+    this.load.image('tulip_mythic', '/assets/tulips/mythic.png');
+    
+    // For MVP, we'll use colored rectangles for plot states
     // This creates simple placeholder "sprites" programmatically
-    this.createPlaceholderAssets();
+    this.createPlaceholderPlots();
+    
+    // Create particle texture for starbursts
+    this.createParticleTexture();
   }
 
-  createPlaceholderAssets() {
-    // Create colored rectangles as placeholders
+  createPlaceholderPlots() {
+    // Create colored rectangles as placeholders for plot states
     const graphics = this.add.graphics();
     
     // Plot states
@@ -57,29 +68,25 @@ export class BootScene extends Phaser.Scene {
     graphics.generateTexture('plot_watered', 100, 100);
     graphics.clear();
 
-    // Rarity tulips (different colors)
-    const rarityColors = [
-      0xFFFFFF, // 0 (unused)
-      0x90EE90, // 1 Common (light green)
-      0x4169E1, // 2 Uncommon (royal blue)
-      0x9370DB, // 3 Rare (medium purple)
-      0xFFD700, // 4 Epic (gold)
-      0xFF1493, // 5 Legendary (deep pink)
-      0xFF00FF  // 6 Mythic (magenta)
-    ];
-
-    rarityColors.forEach((color, index) => {
-      if (index === 0) return;
-      graphics.fillStyle(color, 1);
-      graphics.fillRect(0, 0, 100, 100);
-      // Add a simple tulip shape (triangle on circle)
-      graphics.fillStyle(0xFFFFFF, 0.3);
-      graphics.fillCircle(50, 70, 20);
-      graphics.fillTriangle(50, 30, 35, 60, 65, 60);
-      graphics.generateTexture(`tulip_rarity_${index}`, 100, 100);
-      graphics.clear();
-    });
-
+    graphics.destroy();
+  }
+  
+  createParticleTexture() {
+    // Create a star shape for particle effects
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0xFFFFFF, 1);
+    
+    // Draw a star
+    const points = [];
+    for (let i = 0; i < 10; i++) {
+      const angle = (i * Math.PI) / 5;
+      const radius = i % 2 === 0 ? 8 : 4;
+      points.push(8 + radius * Math.cos(angle));
+      points.push(8 + radius * Math.sin(angle));
+    }
+    
+    graphics.fillPoints(points as any, true);
+    graphics.generateTexture('particle_star', 16, 16);
     graphics.destroy();
   }
 
