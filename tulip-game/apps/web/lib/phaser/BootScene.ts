@@ -32,6 +32,20 @@ export class BootScene extends Phaser.Scene {
       loadingText.destroy();
     });
 
+    // Load greenhouse backgrounds
+    this.load.image('greenhouse_interior', '/assets/greenhouse/interior.png');
+    this.load.image('shelf_empty', '/assets/greenhouse/empty_shelf.png');
+    
+    // Load pot states
+    this.load.image('pot_empty', '/assets/pot/pot_stage_1.png');
+    this.load.image('pot_planted', '/assets/pot/post_stage_2.png');
+    this.load.image('pot_watered', '/assets/pot/pot_stage_3.png');
+    
+    // Load tools
+    this.load.image('tool_seeds', '/assets/tools/seeds.png');
+    this.load.image('tool_watering_can', '/assets/tools/watering_can.png');
+    this.load.image('tool_fertilizer', '/assets/tools/fertilizer.png');
+    
     // Load tulip images
     this.load.image('tulip_common', '/assets/tulips/common.png');
     this.load.image('tulip_uncommon', '/assets/tulips/uncommon.png');
@@ -40,37 +54,10 @@ export class BootScene extends Phaser.Scene {
     this.load.image('tulip_legendary', '/assets/tulips/legendary.png');
     this.load.image('tulip_mythic', '/assets/tulips/mythic.png');
     
-    // For MVP, we'll use colored rectangles for plot states
-    // This creates simple placeholder "sprites" programmatically
-    this.createPlaceholderPlots();
-    
     // Create particle texture for starbursts
     this.createParticleTexture();
   }
 
-  createPlaceholderPlots() {
-    // Create colored rectangles as placeholders for plot states
-    const graphics = this.add.graphics();
-    
-    // Plot states
-    graphics.fillStyle(0x8B4513, 1); // Brown for empty plot
-    graphics.fillRect(0, 0, 100, 100);
-    graphics.generateTexture('plot_empty', 100, 100);
-    graphics.clear();
-
-    graphics.fillStyle(0x654321, 1); // Darker brown for planted
-    graphics.fillRect(0, 0, 100, 100);
-    graphics.generateTexture('plot_planted', 100, 100);
-    graphics.clear();
-
-    graphics.fillStyle(0x4169E1, 1); // Blue for watered
-    graphics.fillRect(0, 0, 100, 100);
-    graphics.generateTexture('plot_watered', 100, 100);
-    graphics.clear();
-
-    graphics.destroy();
-  }
-  
   createParticleTexture() {
     // Create a star shape for particle effects
     const graphics = this.add.graphics();
@@ -91,6 +78,6 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start('GardenScene');
+    this.scene.start('TitleScene');
   }
 }
