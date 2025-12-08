@@ -21,6 +21,7 @@ export default function GameCanvas() {
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
+        orientation: Phaser.Scale.Orientation.LANDSCAPE,
       },
       scene: [BootScene, TitleScene, GardenScene],
     };
@@ -39,8 +40,8 @@ export default function GameCanvas() {
   return (
     <div 
       id="game-container" 
-      className="w-full h-full"
-      style={{ width: '800px', height: '600px', maxWidth: '100%' }}
+      className="fixed inset-0 w-full h-full"
+      style={{ margin: 0, padding: 0, backgroundColor: '#1a1a1a' }}
     />
   );
 }

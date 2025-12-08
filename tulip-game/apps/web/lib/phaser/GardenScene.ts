@@ -6,6 +6,7 @@ interface PotState {
   wateredAt?: number;
   bloomedAt?: number;
   rarity?: number;
+  fertilized?: boolean;
 }
 
 interface BloomedTulip {
@@ -47,8 +48,22 @@ export class GardenScene extends Phaser.Scene {
     bg.setDisplaySize(width, height);
 
     // LEFT SIDE: Display shelf for bloomed tulips
+    // Add shelf background panel
+    const shelfBg = this.add.rectangle(150, 320, 220, 380, 0x8B4513, 0.7)
+      .setStrokeStyle(3, 0x654321);
+    
+    // Add shelf title
+    const shelfTitle = this.add.text(150, 150, '🌷 Collection', {
+      fontSize: '20px',
+      fontFamily: 'Georgia, serif',
+      color: '#ffffff',
+      backgroundColor: '#8B4513aa',
+      padding: { x: 15, y: 8 }
+    }).setOrigin(0.5);
+    
     const shelf = this.add.image(150, 300, 'shelf_empty');
     shelf.setDisplaySize(250, 450);
+    shelf.setAlpha(0.3); // Make it subtle
 
     // RIGHT SIDE: Single pot (center-right)
     this.pot = this.add.image(550, 300, 'pot_empty');
@@ -96,24 +111,28 @@ export class GardenScene extends Phaser.Scene {
     this.seedBag.setDisplaySize(120, 120);
     this.seedBag.setInteractive({ useHandCursor: true, draggable: true });
     this.seedBag.setData('toolType', 'seeds');
+    this.seedBag.setData('originalScale', this.seedBag.scaleX);
 
     // Watering can (center)
     this.wateringCan = this.add.image(this.toolPositions.water.x, this.toolPositions.water.y, 'tool_watering_can');
     this.wateringCan.setDisplaySize(120, 120);
     this.wateringCan.setInteractive({ useHandCursor: true, draggable: true });
     this.wateringCan.setData('toolType', 'water');
+    this.wateringCan.setData('originalScale', this.wateringCan.scaleX);
 
     // Fertilizer (right)
     this.fertilizerBag = this.add.image(this.toolPositions.fertilizer.x, this.toolPositions.fertilizer.y, 'tool_fertilizer');
     this.fertilizerBag.setDisplaySize(120, 120);
     this.fertilizerBag.setInteractive({ useHandCursor: true, draggable: true });
     this.fertilizerBag.setData('toolType', 'fertilizer');
+    this.fertilizerBag.setData('originalScale', this.fertilizerBag.scaleX);
   }
 
   private setupDragAndDrop() {
     // Drag start
     this.input.on('dragstart', (pointer: any, gameObject: Phaser.GameObjects.Image) => {
-      gameObject.setScale(1.2);
+      const originalScale = gameObject.getData('originalScale');
+      gameObject.setScale(originalScale * 1.1);
       gameObject.setDepth(100);
     });
 
@@ -161,6 +180,7 @@ export class GardenScene extends Phaser.Scene {
 
   private snapBack(tool: Phaser.GameObjects.Image, shake: boolean) {
     const toolType = tool.getData('toolType');
+    const originalScale = tool.getData('originalScale');
     let targetX = this.toolPositions.seeds.x;
     let targetY = this.toolPositions.seeds.y;
 
@@ -186,7 +206,7 @@ export class GardenScene extends Phaser.Scene {
             targets: tool,
             x: targetX,
             y: targetY,
-            scale: 1,
+            scale: originalScale,
             duration: 300,
             ease: 'Back.easeOut'
           });
@@ -198,7 +218,7 @@ export class GardenScene extends Phaser.Scene {
         targets: tool,
         x: targetX,
         y: targetY,
-        scale: 1,
+        scale: originalScale,
         duration: 300,
         ease: 'Back.easeOut'
       });
@@ -279,15 +299,12 @@ export class GardenScene extends Phaser.Scene {
         // Golden sparkles
         this.addFertilizerParticles(this.pot.x, this.pot.y);
         
-        // Speed up bloom time by 50%
-        if (this.potState.wateredAt) {
-          const BLOOM_TIME = 60 * 1000; // 1 minute
-          this.potState.wateredAt += BLOOM_TIME * 0.5;
-        }
+        // Mark as fertilized - increases rarity chances
+        this.potState.fertilized = true;
         
         this.snapBack(tool, false);
         this.saveGameState();
-        this.showMessage('🌾 Fertilized! Bloom time reduced by 50%.');
+        this.showMessage('🌾 Fertilized! Higher chance of rare blooms!');
       }
     });
   }
@@ -315,13 +332,26 @@ export class GardenScene extends Phaser.Scene {
   }
 
   private getRarity(): number {
+    const isFertilized = this.potState.fertilized;
     const roll = Math.random() * 10000;
-    if (roll < 5000) return 1; // 50% Common
-    if (roll < 8000) return 2; // 30% Uncommon
-    if (roll < 9500) return 3; // 15% Rare
-    if (roll < 9900) return 4; // 4% Epic
-    if (roll < 9990) return 5; // 0.9% Legendary
-    return 6;                   // 0.1% Mythic
+    
+    if (isFertilized) {
+      // Fertilized: Better odds (shift distribution up)
+      if (roll < 3000) return 1; // 30% Common
+      if (roll < 6000) return 2; // 30% Uncommon
+      if (roll < 8000) return 3; // 20% Rare
+      if (roll < 9200) return 4; // 12% Epic
+      if (roll < 9800) return 5; // 6% Legendary
+      return 6;                   // 2% Mythic
+    } else {
+      // Normal odds
+      if (roll < 5000) return 1; // 50% Common
+      if (roll < 8000) return 2; // 30% Uncommon
+      if (roll < 9500) return 3; // 15% Rare
+      if (roll < 9900) return 4; // 4% Epic
+      if (roll < 9990) return 5; // 0.9% Legendary
+      return 6;                   // 0.1% Mythic
+    }
   }
 
   private revealBloom() {
@@ -353,14 +383,14 @@ export class GardenScene extends Phaser.Scene {
         // Create tulip on pot
         const spriteName = sprites[rarity - 1] || 'tulip_common';
         const tulip = this.add.image(this.pot.x, this.pot.y, spriteName)
-          .setDisplaySize(180, 180)
+          .setDisplaySize(80, 80)
           .setScale(0)
           .setDepth(10);
         
         // Bloom animation
         this.tweens.add({
           targets: tulip,
-          scale: 1.2,
+          scale: 1.1,
           duration: 600,
           ease: 'Back.easeOut',
           yoyo: true,
@@ -381,7 +411,8 @@ export class GardenScene extends Phaser.Scene {
         const rarityNames = ['', 'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic'];
         const rarityColors = ['', '#90EE90', '#4169E1', '#9370DB', '#FFD700', '#FF1493', '#FF00FF'];
         
-        const label = this.add.text(this.pot.x, this.pot.y + 110, rarityNames[rarity], {
+        const rarityName = rarityNames[rarity] || 'Unknown';
+        const label = this.add.text(this.pot.x, this.pot.y + 110, rarityName, {
           fontSize: '18px',
           color: rarityColors[rarity],
           fontStyle: 'bold',
@@ -407,17 +438,17 @@ export class GardenScene extends Phaser.Scene {
   }
 
   private flyToShelf(tulip: Phaser.GameObjects.Image, rarity: number) {
-    // Calculate shelf position
+    // Calculate shelf position (4 columns in compact grid)
     const shelfCount = this.bloomedTulips.length;
-    const shelfX = 150;
-    const shelfY = 200 + (shelfCount * 60); // Stack vertically
+    const shelfX = 70 + (shelfCount % 4) * 40; // 4 columns, 40px spacing
+    const shelfY = 195 + Math.floor(shelfCount / 4) * 40; // 4 rows, 40px spacing
     
     // Fly animation
     this.tweens.add({
       targets: tulip,
       x: shelfX,
       y: shelfY,
-      scale: 0.6,
+      scale: 0.06,
       duration: 1000,
       ease: 'Cubic.easeInOut',
       onComplete: () => {
@@ -425,8 +456,12 @@ export class GardenScene extends Phaser.Scene {
         this.bloomedTulips.push({ rarity, timestamp: Date.now() });
         this.shelfSprites.push(tulip);
         
-        // Reset pot
-        this.potState = { status: 'empty' };
+        // Make thumbnail interactive
+        tulip.setInteractive({ useHandCursor: true });
+        tulip.on('pointerdown', () => this.showTulipDialog(tulip.texture.key, rarity));
+        
+        // Reset pot (clear fertilized flag)
+        this.potState = { status: 'empty', fertilized: false };
         this.pot.setTexture('pot_empty');
         
         this.saveGameState();
@@ -517,6 +552,68 @@ export class GardenScene extends Phaser.Scene {
     });
   }
 
+  private showTulipDialog(textureKey: string, rarity: number) {
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    
+    // Semi-transparent overlay
+    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.8)
+      .setInteractive()
+      .setDepth(200);
+    
+    // Dialog background
+    const dialogBg = this.add.rectangle(width / 2, height / 2, 400, 500, 0x2d1810, 1)
+      .setStrokeStyle(4, 0x8B4513)
+      .setDepth(201);
+    
+    // Large tulip image
+    const tulipImage = this.add.image(width / 2, height / 2 - 60, textureKey)
+      .setDisplaySize(250, 250)
+      .setDepth(202);
+    
+    // Rarity label
+    const rarityNames = ['', 'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic'];
+    const rarityColors = ['', '#8B8B8B', '#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#FFD700'];
+    const rarityName = rarityNames[rarity] || 'Unknown';
+    const rarityColor = rarityColors[rarity] || '#FFFFFF';
+    
+    const label = this.add.text(width / 2, height / 2 + 140, rarityName, {
+      fontSize: '32px',
+      fontFamily: 'Georgia, serif',
+      color: rarityColor,
+      stroke: '#000000',
+      strokeThickness: 4
+    }).setOrigin(0.5).setDepth(202);
+    
+    // Close button
+    const closeBtn = this.add.text(width / 2, height / 2 + 200, '✕ Close', {
+      fontSize: '24px',
+      fontFamily: 'Georgia, serif',
+      color: '#ffffff',
+      backgroundColor: '#8B4513',
+      padding: { x: 30, y: 10 }
+    }).setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(202);
+    
+    closeBtn.on('pointerdown', () => {
+      overlay.destroy();
+      dialogBg.destroy();
+      tulipImage.destroy();
+      label.destroy();
+      closeBtn.destroy();
+    });
+    
+    // Click overlay to close
+    overlay.on('pointerdown', () => {
+      overlay.destroy();
+      dialogBg.destroy();
+      tulipImage.destroy();
+      label.destroy();
+      closeBtn.destroy();
+    });
+  }
+
   private showMessage(text: string, duration: number = 2000) {
     const message = this.add.text(400, 80, text, {
       fontSize: '20px',
@@ -562,9 +659,14 @@ export class GardenScene extends Phaser.Scene {
         // Restore shelf tulips
         const sprites = ['tulip_common', 'tulip_uncommon', 'tulip_rare', 'tulip_epic', 'tulip_legendary', 'tulip_mythic'];
         this.bloomedTulips.forEach((tulip, index) => {
-          const sprite = this.add.image(150, 200 + (index * 60), sprites[tulip.rarity - 1]);
-          sprite.setDisplaySize(100, 100);
-          sprite.setScale(0.6);
+          const spriteName = sprites[tulip.rarity - 1] || 'tulip_common';
+          const shelfX = 70 + (index % 4) * 40; // 4 columns, 40px spacing
+          const shelfY = 195 + Math.floor(index / 4) * 40; // 4 rows, 40px spacing
+          const sprite = this.add.image(shelfX, shelfY, spriteName);
+          sprite.setDisplaySize(25, 25);
+          sprite.setScale(0.06);
+          sprite.setInteractive({ useHandCursor: true });
+          sprite.on('pointerdown', () => this.showTulipDialog(spriteName, tulip.rarity));
           this.shelfSprites.push(sprite);
         });
       }

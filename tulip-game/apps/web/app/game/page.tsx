@@ -13,9 +13,5 @@ const GameCanvas = dynamic(() => import('@/components/GameCanvas'), {
 });
 
 export default function GamePage() {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900 p-4">
-      <GameCanvas />
-    </div>
-  );
+  return <GameCanvas />;
 }

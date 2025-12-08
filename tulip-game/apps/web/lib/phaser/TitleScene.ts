@@ -37,11 +37,14 @@ export class TitleScene extends Phaser.Scene {
       fontSize: '20px',
       fontFamily: 'Georgia, serif',
       color: '#ffffff',
-      style: 'italic'
+      fontStyle: 'italic'
     }).setOrigin(0.5);
 
-    // Start button (wood plank style)
-    const button = this.add.text(width / 2, height * 0.65, 'Start Growing', {
+    // Start button (simplified with DOM-style rounded corners)
+    const buttonX = width / 2;
+    const buttonY = height * 0.65;
+    
+    const button = this.add.text(buttonX, buttonY, 'Start Growing', {
       fontSize: '32px',
       fontFamily: 'Georgia, serif',
       color: '#ffffff',
@@ -55,25 +58,24 @@ export class TitleScene extends Phaser.Scene {
         fill: true
       }
     }).setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
+      .setInteractive({ useHandCursor: true })
+      .setStyle({ borderRadius: '15px' });
 
     // Button hover effect
     button.on('pointerover', () => {
-      button.setScale(1.05);
       button.setStyle({ backgroundColor: '#A0522D' });
     });
 
     button.on('pointerout', () => {
-      button.setScale(1);
       button.setStyle({ backgroundColor: '#8B4513' });
     });
 
     button.on('pointerdown', () => {
-      button.setScale(0.95);
+      button.setAlpha(0.8);
     });
 
     button.on('pointerup', () => {
-      button.setScale(1.05);
+      button.setAlpha(1);
       // Fade out and start game
       this.cameras.main.fadeOut(500, 0, 0, 0);
       this.time.delayedCall(500, () => {
