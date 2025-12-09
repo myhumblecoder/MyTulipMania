@@ -79,7 +79,7 @@ export class TitleScene extends Phaser.Scene {
       // Fade out and start game
       this.cameras.main.fadeOut(500, 0, 0, 0);
       this.time.delayedCall(500, () => {
-        this.scene.start('GreenhouseScene');
+        this.scene.start('GardenScene');
       });
     });
 
