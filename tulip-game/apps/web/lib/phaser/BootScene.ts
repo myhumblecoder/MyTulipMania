@@ -32,11 +32,16 @@ export class BootScene extends Phaser.Scene {
       loadingText.destroy();
     });
 
-    // Load greenhouse backgrounds
+    // Log loading errors
+    this.load.on('loaderror', (fileObj: any) => {
+      console.error('Failed to load:', fileObj.key, fileObj.url);
+    });
+
+    // Load greenhouse background
     this.load.image('greenhouse_interior', '/assets/greenhouse/interior.png');
     this.load.image('shelf_empty', '/assets/greenhouse/empty_shelf.png');
     
-    // Load pot states
+    // Load pots
     this.load.image('pot_empty', '/assets/pot/pot_stage_1.png');
     this.load.image('pot_planted', '/assets/pot/post_stage_2.png');
     this.load.image('pot_watered', '/assets/pot/pot_stage_3.png');
@@ -46,13 +51,16 @@ export class BootScene extends Phaser.Scene {
     this.load.image('tool_watering_can', '/assets/tools/watering_can.png');
     this.load.image('tool_fertilizer', '/assets/tools/fertilizer.png');
     
-    // Load tulip images
+    // Load individual tulips (500x500 each)
     this.load.image('tulip_common', '/assets/tulips/common.png');
     this.load.image('tulip_uncommon', '/assets/tulips/uncommon.png');
     this.load.image('tulip_rare', '/assets/tulips/rare.png');
     this.load.image('tulip_epic', '/assets/tulips/epic.png');
     this.load.image('tulip_legendary', '/assets/tulips/legendary.png');
     this.load.image('tulip_mythic', '/assets/tulips/mythic.png');
+    
+    // Individual tulip textures will be created from the sheet in create()
+    // Tulips are arranged left to right: red, lavender, pale pink, dark purple, orange, burgundy
     
     // Create particle texture for starbursts
     this.createParticleTexture();
@@ -78,6 +86,16 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
+    // Assets are already loaded as individual images - no extraction needed!
+    console.log('All assets loaded successfully');
+    console.log('Checking textures...');
+    console.log('- greenhouse_interior:', this.textures.exists('greenhouse_interior'));
+    console.log('- tool_seeds:', this.textures.exists('tool_seeds'));
+    console.log('- tool_watering_can:', this.textures.exists('tool_watering_can'));
+    console.log('- tool_fertilizer:', this.textures.exists('tool_fertilizer'));
+    console.log('- tulip_common:', this.textures.exists('tulip_common'));
+    console.log('- tulip_uncommon:', this.textures.exists('tulip_uncommon'));
+    console.log('- pot_empty:', this.textures.exists('pot_empty'));
     this.scene.start('TitleScene');
   }
 }
